@@ -10,139 +10,11 @@ from pygal.style import *
 #create a flask app object and set app variables
 app = Flask(__name__)
 app.config["DEBUG"] = True
-app.config["SECRECT_KEY"] = 'your secret key'
-app.secret_key = 'your secret key'
+app.config["SECRET_KEY"] = 'your secret key'
 
-
-
-
-# function to get and validate user input
-@app.route('/index/', methods = ('POST',))
-def get_user_input():
-    print("Stock Data Visualizer\n-------------------------")
-    
-    # get stock symbol
-    # i dont see a way to query the db to see if the symbol is in there, will just have to TRY/CATCH and see if it works lol
-    symbol = input("\nEnter the stock symbol you are looking for: ").upper()
-    
-    chart_type = ""
-    while(True):
-        print("\nChart Types\n---------------------")
-        print("1. Bar")
-        print("2. Line\n")
-        chart_num = input("Enter the chart type you want (1, 2): ")
-        
-        if chart_num == "1":
-            chart_type = "Bar"
-        elif chart_num == "2":
-            chart_type = "Line"
-        else:
-            print("Enter a 1 or 2 for chart type")
-            continue
-        
-        break
-    
-    # get time series choice
-    time_series = ""
-    interval = None
-    while(True):    
-        print("\nSelect the Time Series of the chart you want to generate\n-------------------------------------")
-        print("1. Intraday")
-        print("2. Daily")
-        print("3. Weekly")
-        print("4. Monthly")
-        
-        time_series_option = input("\nEnter time series option (1, 2, 3, 4): ")
-
-        
-        if time_series_option == "1":
-            time_series = "TIME_SERIES_INTRADAY"
-            while(True): 
-                print("\nSelect the time interval for the chart\n-------------------------------------")
-                print("1. 1 minute")
-                print("2. 5 minutes")
-                print("3. 15 minutes")
-                print("4. 30 minutes")
-                print("5. 60 minutes")
-                interval_option = input("Enter time series option (1, 2, 3, 4, 5): ")
-                if interval_option == "1":
-                    interval = "1min"
-                elif interval_option == "2":
-                    interval = "5min"
-                elif interval_option == "3":
-                    interval = "15min"
-                elif interval_option == "4":
-                    interval = "30min"
-                elif interval_option == "5":
-                    interval = "60min"
-                else:
-                    print("Please enter 1, 2, 3, 4, or 5 for interval option.")
-                    continue
-                break
-
-        elif time_series_option == "2":
-            time_series = "TIME_SERIES_DAILY"
-        elif time_series_option == "3":
-            time_series = "TIME_SERIES_WEEKLY"
-        elif time_series_option == "4":
-            time_series = "TIME_SERIES_MONTHLY"
-        else:
-            print("Enter a 1, 2, 3, or 4 for time series type")
-            continue
-        
-        break
-    
-    # get start and end dates, make sure start date < end date
-    while True:
-        start_date_str = input("\nEnter the start date (YYYY-MM-DD): ")
-        try:
-            start_date = pd.to_datetime(start_date_str)
-        except ValueError:
-            print("Invalid date format. Please use YYYY-MM-DD.")
-            continue
-        
-        end_date_str = input("\nEnter the end date (YYYY-MM-DD): ")
-        # another while loop so you don't have to reinput the start date if you mess up the end date
-        while True:
-            try:
-                end_date = pd.to_datetime(end_date_str)
-                break
-            except ValueError:
-                print("Invalid date format. Please use YYYY-MM-DD.")
-                continue
-
-        if start_date > end_date:
-            print("Start date must be earlier than end date.")
-            continue
-        elif start_date < pd.Timestamp("2000-01-01"):
-            print("Start date must be after 2000-01-01.")
-            continue
-        else:
-            break
-        
-    return symbol, chart_type, time_series, interval, start_date, end_date
-    
-# function to parse data and send data to graph
-def get_data(symbol, chart_type, time_series, interval, start_date, end_date):
-    API_KEY = os.getenv("ALPHAVANTAGE_API_KEY", "38Z6ROU8EAKF0E9C")
-
-    df = fetch_data_through_api(symbol, API_KEY, time_series, interval)
-    
-    # if the data was not fetched for whatever reason, get_data should return None or may just be empty
-    if df is None or df.empty:
-        print("\n***********************\nNo data fetched. Please try a different symbol or date range.\n***********************\n")
-        return None
-    
-    filtered_df = df.loc[start_date:end_date]
-    
-    print(f"\nFetched {len(df)} records for {symbol}.")
-    print(f"Displaying data from {start_date.date()} to {end_date.date()}: {len(filtered_df)} records.")
-    print(f"Will use {chart_type} chart\n")
-    
-    return filtered_df
 
 # function to fetch data through API connection using user input
-def fetch_data_through_api(symbol, api_key, function, interval = None):
+def fetch_data_through_api(symbol, api_key, function):
     url = "https://www.alphavantage.co/query"
     
     # parameters for the request
@@ -184,18 +56,25 @@ def fetch_data_through_api(symbol, api_key, function, interval = None):
         
     return None
 
-# function to display graph to users browser
-def display_data_to_user(df, symbol, chart_type, start_date, end_date):
-    if df is None or df.empty:
-        print("\n***********************\nNo data available to display.\n***********************\n")
-        return
+
+# function to parse data and send data to graph
+def get_data(symbol, chart_type, time_series, start_date, end_date):
+    API_KEY = os.getenv("ALPHAVANTAGE_API_KEY", "38Z6ROU8EAKF0E9C")
+
+    df = fetch_data_through_api(symbol, API_KEY, time_series)
     
-    if chart_type == "Line":
-        create_line_chart(df, symbol, start_date, end_date)
-    elif chart_type == "Bar":
-        create_bar_chart(df, symbol, start_date, end_date)
-    else:
-        print("\n***********************\nUnsupported chart type\n***********************\n")
+    # if the data was not fetched for whatever reason, get_data should return None or may just be empty
+    if df is None or df.empty:
+        print("\n***********************\nNo data fetched. Please try a different symbol or date range.\n***********************\n")
+        return None
+    
+    filtered_df = df.loc[start_date:end_date]
+    
+    print(f"\nFetched {len(df)} records for {symbol}.")
+    print(f"Displaying data from {start_date.date()} to {end_date.date()}: {len(filtered_df)} records.")
+    print(f"Will use {chart_type} chart\n")
+    
+    return filtered_df
 
 #function to create line chart
 def create_line_chart(df, symbol, start_date, end_date):
@@ -214,7 +93,7 @@ def create_line_chart(df, symbol, start_date, end_date):
     line_chart.add("Low", df['low'].tolist())
     line_chart.add("Close", df['close'].tolist())
 
-    line_chart.render_in_browser()
+    return line_chart.render_data_uri()
 
 #function to create bar chart
 def create_bar_chart(df, symbol, start_date, end_date):
@@ -233,27 +112,76 @@ def create_bar_chart(df, symbol, start_date, end_date):
     bar_chart.add("Low", df['low'].tolist())
     bar_chart.add("Close", df['close'].tolist())
 
-    bar_chart.render_in_browser()
+    return bar_chart.render_data_uri()
 
-def main():
-    while(True):
-        symbol, chart_type, time_series, interval, start_date, end_date = get_user_input()
-        result = get_data(symbol, chart_type, time_series, interval, start_date, end_date)
+
+
+# function to get and validate user input
+@app.route('/', methods = ('GET','POST'))
+def index():
+    
+    # QUINCY: GET_SYMBOLS FUNCTION NEEDS TO BE USED HERE INSTEAD OF THE CODE BELOW
+    #symbols = get_symbols()
+    symbols = ["AAPL", "IBM"]
+    
+    # holds chart if we make one
+    chart_to_display = None
+
+
+    if request.method == "POST":
         
-        # handling error while fetching data so that it doesn't break the program
-        if result is None:
-            continue
+        # gets input from form when Submit is pushed
+        symbol = request.form.get('symbolOption')
+        chart_type = request.form.get('chartTypeOption')
+        time_series = request.form.get('timeSeriesOption')
         
-        print("\nGenerating chart... Please wait.\n")
-        display_data_to_user(result, symbol, chart_type, start_date, end_date)
+        try:
+            start_date_str = request.form.get('startDateOption')
+            end_date_str = request.form.get('endDateOption')
+            
+            start_date = pd.Timestamp(start_date_str)
+            end_date = pd.Timestamp(end_date_str)
+        except Exception as e:
+            flash(f"Invalid date format. Please enter valid dates. Error: {e}")
+            return render_template('index.html', symbols=symbols, chart_to_display=None)
         
-        view_again = input("Would you like to view more stock data? Press 'y' to continue: ").lower()
+        # checks if start date less than end date and start date in date range
+        if start_date < pd.Timestamp("2000-01-01"):
+            flash("Start date must be after 2000-01-01.")
+            return render_template('index.html', symbols=symbols, chart_to_display=None)
+        elif start_date > end_date:
+            flash("Start date must be earlier than end date.")
+            return render_template('index.html', symbols=symbols, chart_to_display=None)
+
+        # mapping natural language to function required by API
+        # converting Daily to TIME_SERIES_DAILY, etc.  
+        time_series_map = {
+            "Intraday": "TIME_SERIES_INTRADAY",
+            "Daily": "TIME_SERIES_DAILY",
+            "Weekly": "TIME_SERIES_WEEKLY",
+            "Monthly": "TIME_SERIES_MONTHLY"
+        }
+        api_function = time_series_map.get(time_series)
+        if not api_function:
+            flash(f"Invalid time series selected: {time_series}")
+            return render_template('index.html', symbols=symbols, chart_to_display=None)
+
+        # gets dataframe from API
+        print(symbol, chart_type, api_function, start_date, end_date)
+        result = get_data(symbol, chart_type, api_function, start_date, end_date)
         
-        if view_again == "y":
-            continue
-        else:
-            print("Hope you enjoyed!")
-            break
+        if result is None or result.empty:
+            flash("No data found for the selected symbol and date range. Please try again.")
+            return render_template('index.html', symbols=symbols, chart_to_display=None)
+
+        # returns chart to display 
+        if chart_type == "Bar":
+            chart_to_display = create_bar_chart(result, symbol, start_date, end_date)
+        elif chart_type == "Line":
+            chart_to_display = create_line_chart(result, symbol, start_date, end_date)
+            
+    return render_template('index.html', symbols=symbols, chart_to_display=chart_to_display)
     
     
-main()
+#run the application
+app.run(port=5002, debug=True)

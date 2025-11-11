@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 
+{% block title %}Stock Visualizer{% endblock %}
+
 {% block content %}
-<h1>Stock Data Visualizer</h1>
-<hr>
+    <h1>Stock Data Visualizer</h1>
     <form action="#" method="post">
+        <label for="symbolOption">Select a Symbol:</label>
         <select name="symbolOption" id="symbolOption">
             <option value="">Select a Symbol</option>
             {% for symbol in symbols %}
@@ -12,6 +14,7 @@
         </select>
         <br>
 
+        <label for="chartTypeOption">Select a Chart Type:</label>
         <select name="chartTypeOption" id="chartTypeOption">
             <option value="">Select a Chart Type</option>
             <option value="Bar">1. Bar</option>
@@ -19,6 +22,7 @@
         </select>
         <br>
 
+        <label for="timeSeriesOption">Select a Time Series:</label>
         <select name="timeSeriesOption" id="timeSeriesOption">
             <option value="">Select a Time Series</option>
             <option value="Intraday">1. Intraday</option>
@@ -28,14 +32,19 @@
         </select>
         <br>
 
-        <label for="startDate">Start Date:</label>
-        <input type="date" id="startDate" name="startDate">
+        <label for="startDateOption">Start Date:</label>
+        <input type="date" id="startDateOption" name="startDateOption">
         <br>
 
-        <label for="endDate">End Date:</label>
-        <input type="date" id="endDate" name="endDate">
+        <label for="endDateOption">End Date:</label>
+        <input type="date" id="endDateOption" name="endDateOption">
         <br>
 
         <input type="submit" value="Submit"> 
     </form>
+    {% if chart_to_display %}
+        <div id="chart">
+            <embed type="image/svg+xml" src= {{ chart_to_display|safe }} />
+        </div>
+    {% endif %}
 {% endblock %}

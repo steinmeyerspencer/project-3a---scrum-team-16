@@ -1,6 +1,6 @@
 html, body {
     height: 100%;
-    background-color: #E6E6FA;
+    background-color: #89CFF0;
     margin: 0;
     padding: 0;
     display: flex;
@@ -11,13 +11,18 @@ label, p{
     margin-left: 5px;
 }
 .content {
-    width: 90%;
+    width: 800px;
     padding: 20px;
     background-color: white;
-    border: 2px solid rgb(212, 135, 217);
+    border: 2px solid #4169E1;
     border-radius: 5px;
     margin-top: 20px;
     box-sizing: border-box;
+}
+
+h1 {
+    text-align: center;
+    font-size: 3em;
 }
 .alert {
     padding: 20px;
@@ -28,7 +33,7 @@ label, p{
 
 hr {
     border: none;
-    border-top: 2px solid rgb(212, 135, 217);
+    border-top: 2px solid #4169E1;
     width: 100%;
 }
 
@@ -38,30 +43,30 @@ hr {
     background-color: lightblue;
 }
 
-select, input[type="submit"] {
+select, input[type="submit"], input[type="date"]{
     font-size: 1em;
     padding: 10px 15px;
-    border: 2px solid #9370DB;
+    border: 2px solid #4169E1;
     border-radius: 8px;
-    background-color: #f5f5ff;
-    color: #4B0082;
+    background-color: #F0F8FF;
+    color: #000080;
     margin: 10px 5px;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
-select:hover, input[type="submit"]:hover {
-    background-color: #e6e6fa;
-    border-color: #4B0082;
+select:hover, input[type="submit"]:hover, input[type="date"]:hover {
+    background-color: #DDEBF1;
+    border-color: #0000CD;
     color: black;
 }
 
 input[type="submit"] {
-    background-color: #9370DB;
+    background-color: #4169E1;
     color: white;
 }
 
 input[type="submit"]:hover {
-    background-color: #7B68EE;
+    background-color: #0000CD;
 }
