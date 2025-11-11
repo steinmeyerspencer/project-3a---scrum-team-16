@@ -203,4 +203,5 @@ def index():
     
     
 #run the application
-app.run(port=5002, debug=True)
+app.run(host="0.0.0.0", debug=True)
+#removed port=5005 to containerize
