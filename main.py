@@ -6,6 +6,7 @@ import os
 import io
 import pygal
 from pygal.style import *
+from datetime import date
 
 #create a flask app object and set app variables
 app = Flask(__name__)
@@ -69,6 +70,10 @@ def get_data(symbol, chart_type, time_series, start_date, end_date):
         return None
     
     filtered_df = df.loc[start_date:end_date]
+    
+    if filtered_df.empty:
+        print("\n***********************\nNo data found for the specified date range.\n***********************\n")
+        return None
     
     print(f"\nFetched {len(df)} records for {symbol}.")
     print(f"Displaying data from {start_date.date()} to {end_date.date()}: {len(filtered_df)} records.")
@@ -135,6 +140,17 @@ def index():
         chart_type = request.form.get('chartTypeOption')
         time_series = request.form.get('timeSeriesOption')
         
+        # ensures all information was submitted
+        if not symbol:
+            flash("Please select a stock symbol.")
+            return render_template('index.html', symbols=symbols, chart_to_display=None)
+        if not chart_type:
+            flash("Please select a chart type.")
+            return render_template('index.html', symbols=symbols, chart_to_display=None)
+        if not time_series:
+            flash("Please select a time series.")
+            return render_template('index.html', symbols=symbols, chart_to_display=None)
+        
         try:
             start_date_str = request.form.get('startDateOption')
             end_date_str = request.form.get('endDateOption')
@@ -145,12 +161,15 @@ def index():
             flash(f"Invalid date format. Please enter valid dates. Error: {e}")
             return render_template('index.html', symbols=symbols, chart_to_display=None)
         
-        # checks if start date less than end date and start date in date range
+        # checks if start date less than end date and start date, end date in date range
         if start_date < pd.Timestamp("2000-01-01"):
             flash("Start date must be after 2000-01-01.")
             return render_template('index.html', symbols=symbols, chart_to_display=None)
         elif start_date > end_date:
             flash("Start date must be earlier than end date.")
+            return render_template('index.html', symbols=symbols, chart_to_display=None)
+        elif end_date > pd.Timestamp.today().normalize():
+            flash("End date must be before today's date.")
             return render_template('index.html', symbols=symbols, chart_to_display=None)
 
         # mapping natural language to function required by API
