@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Stock Data Visualizer</h1>
+<hr>
+    <form action="#" method="post">
+        <select name="symbolOption" id="symbolOption">
+            <option value="">Select a Symbol</option>
+            {% for symbol in symbols %}
+                <option value = "{{ symbol }}">{{ symbol }}</option>
+            {% endfor %}
+        </select>
+        <br>
+
+        <select name="chartTypeOption" id="chartTypeOption">
+            <option value="">Select a Chart Type</option>
+            <option value="Bar">1. Bar</option>
+            <option value="Line">2. Line</option>            
+        </select>
+        <br>
+
+        <select name="timeSeriesOption" id="timeSeriesOption">
+            <option value="">Select a Time Series</option>
+            <option value="Intraday">1. Intraday</option>
+            <option value="Daily">2. Daily</option>        
+            <option value="Weekly">3. Weekly</option>
+            <option value="Monthly">4. Monthly</option>                
+        </select>
+        <br>
+
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" name="startDate">
+        <br>
+
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" name="endDate">
+        <br>
+
+        <input type="submit" value="Submit"> 
+    </form>
+{% endblock %}

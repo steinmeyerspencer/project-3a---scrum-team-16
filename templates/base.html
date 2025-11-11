@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='SDV_icon.png') }}">
+    <title>{% block title %} {% endblock %} - FlaskApp</title>
+</head>
+<body>
+        <nav>
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('products') }}">Product Reports</a>
+            <a href="{{ url_for('customers') }}">Customer Reports</a>
+            <a href="{{ url_for('employees') }}">Employee Reports</a>
+        </nav>
+        <hr>
+        <div class="content">
+            {% for message in get_flashed_messages() %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+
+            {% block content %} {% endblock %}
+        </div>
+    
+</body>
+</html>

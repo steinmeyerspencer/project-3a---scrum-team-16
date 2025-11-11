@@ -1,56 +1,23 @@
 ## imports
 import requests
+from flask import Flask, render_template, request, flash, url_for, redirect
 import pandas as pd
 import os
 import io
 import pygal
 from pygal.style import *
 
-# function to fetch data through API connection using user input
-def fetch_data_through_api(symbol, api_key, function, interval = None):
-    url = "https://www.alphavantage.co/query"
-    
-    # parameters for the request
-    params = {
-        "function": function,  
-        "symbol": symbol,
-        "outputsize": "full",
-        "datatype": "csv",
-        "apikey": api_key
-    }
-    
-    if function == "TIME_SERIES_INTRADAY":
-        params["interval"] = interval or "60min"
-    
-    try:
-        # make the request
-        response = requests.get(url, params=params)
-        response.raise_for_status()  # will raise an error if the request failed
-        
-        df = pd.read_csv(io.StringIO(response.text))
-        
-        expected_cols = {'timestamp', 'open', 'high', 'low', 'close', 'volume'}
-        if not expected_cols.issubset(df.columns):
-            print("\n***********************\nUnexpected data format from API.\n***********************\n")
-            return None
-        
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        df[['open', 'high', 'low', 'close', 'volume']] = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
-        
-        # now the timestamp is the index, so we can do df.loc[start_date:end_date] with our dataframe
-        df = df.set_index('timestamp')
-        df = df.sort_index()
-        
-        return df
-    except requests.exceptions.RequestException:
-        print("\nAPI Request failed.")
-    except Exception as e:
-        print(f"\nFailed to process data: {e}")
-        
-    return None
+#create a flask app object and set app variables
+app = Flask(__name__)
+app.config["DEBUG"] = True
+app.config["SECRECT_KEY"] = 'your secret key'
+app.secret_key = 'your secret key'
+
+
 
 
 # function to get and validate user input
+@app.route('/index/', methods = ('POST',))
 def get_user_input():
     print("Stock Data Visualizer\n-------------------------")
     
@@ -173,6 +140,49 @@ def get_data(symbol, chart_type, time_series, interval, start_date, end_date):
     print(f"Will use {chart_type} chart\n")
     
     return filtered_df
+
+# function to fetch data through API connection using user input
+def fetch_data_through_api(symbol, api_key, function, interval = None):
+    url = "https://www.alphavantage.co/query"
+    
+    # parameters for the request
+    params = {
+        "function": function,  
+        "symbol": symbol,
+        "outputsize": "full",
+        "datatype": "csv",
+        "apikey": api_key
+    }
+    
+    if function == "TIME_SERIES_INTRADAY":
+        params["interval"] = "60min"
+    
+    try:
+        # make the request
+        response = requests.get(url, params=params)
+        response.raise_for_status()  # will raise an error if the request failed
+        
+        df = pd.read_csv(io.StringIO(response.text))
+        
+        expected_cols = {'timestamp', 'open', 'high', 'low', 'close', 'volume'}
+        if not expected_cols.issubset(df.columns):
+            print("\n***********************\nUnexpected data format from API.\n***********************\n")
+            return None
+        
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df[['open', 'high', 'low', 'close', 'volume']] = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
+        
+        # now the timestamp is the index, so we can do df.loc[start_date:end_date] with our dataframe
+        df = df.set_index('timestamp')
+        df = df.sort_index()
+        
+        return df
+    except requests.exceptions.RequestException:
+        print("\nAPI Request failed.")
+    except Exception as e:
+        print(f"\nFailed to process data: {e}")
+        
+    return None
 
 # function to display graph to users browser
 def display_data_to_user(df, symbol, chart_type, start_date, end_date):
