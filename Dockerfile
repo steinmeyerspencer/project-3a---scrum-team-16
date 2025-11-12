@@ -14,4 +14,4 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 #set the default commands to run when starting the container
-CMD {"python", "main.py"}
+CMD ["python", "main.py"]

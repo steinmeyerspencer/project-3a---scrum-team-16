@@ -86,7 +86,8 @@ def create_line_chart(df, symbol, start_date, end_date):
     line_chart = pygal.Line(
         style=LightStyle, 
         x_label_rotation=20, 
-        show_minor_x_labels=False,
+        show_minor_x_labels=True,
+        show_major_x_lables=True,
         truncate_label=10,
         show_legend=True
     )
@@ -105,7 +106,8 @@ def create_bar_chart(df, symbol, start_date, end_date):
     bar_chart = pygal.Bar(
         style=LightStyle, 
         x_label_rotation=20, 
-        show_minor_x_labels=False,
+        show_minor_x_labels=True,
+        show_major_x_labels=True,
         truncate_label=10,
         show_legend=True
     )
@@ -126,9 +128,22 @@ def create_bar_chart(df, symbol, start_date, end_date):
 def index():
     
     # QUINCY: GET_SYMBOLS FUNCTION NEEDS TO BE USED HERE INSTEAD OF THE CODE BELOW
-    #symbols = get_symbols()
-    symbols = ["AAPL", "IBM"]
-    
+    def get_symbols():
+        try:
+            csv_path = os.path.join(os.path.dirname(__file__), 'stocks.csv')
+            df = pd.read_csv(csv_path)
+            if 'Symbol' not in df.columns:
+                print("Error: 'Symbol' column not found in CSV")
+                return[]
+            return df ['Symbol'].dropna().tolist()
+        except Exception as e:
+            print(f"Error loading symbols from CSV: {e}")
+            return[]
+        
+    symbols = get_symbols()
+    if not symbols:
+        flash("No Symbols avalable. Please check the file loading your data to the form")
+        
     # holds chart if we make one
     chart_to_display = None
 
