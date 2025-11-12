@@ -121,14 +121,8 @@ def create_bar_chart(df, symbol, start_date, end_date):
 
     return bar_chart.render_data_uri()
 
-
-
-# function to get and validate user input
-@app.route('/', methods = ('GET','POST'))
-def index():
-    
-    # QUINCY: GET_SYMBOLS FUNCTION NEEDS TO BE USED HERE INSTEAD OF THE CODE BELOW
-    def get_symbols():
+# function to get symbols from csv
+def get_symbols():
         try:
             csv_path = os.path.join(os.path.dirname(__file__), 'stocks.csv')
             df = pd.read_csv(csv_path)
@@ -139,7 +133,10 @@ def index():
         except Exception as e:
             print(f"Error loading symbols from CSV: {e}")
             return[]
-        
+
+# function to get and validate user input
+@app.route('/', methods = ('GET','POST'))
+def index():
     symbols = get_symbols()
     if not symbols:
         flash("No Symbols avalable. Please check the file loading your data to the form")
